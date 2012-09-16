@@ -19,6 +19,9 @@ type PersonMeta struct {
     Email string `json:"email"`
 }
 
+/*
+Convert PackageMeta to json
+*/
 func (meta *PackageMeta) ToJsonString() (content []byte, err error) {
     content, err = json.Marshal(meta)
     return
