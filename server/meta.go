@@ -1,4 +1,4 @@
-package gopm_index
+package gopm_index_server
 
 import (
     "encoding/json"
