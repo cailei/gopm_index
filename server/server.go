@@ -4,6 +4,7 @@ import (
     "appengine"
     "appengine/datastore"
     "fmt"
+    "gopm_index"
     "net/http"
 )
 
@@ -27,7 +28,7 @@ func handler_name_exists(w http.ResponseWriter, r *http.Request) {
     }
     ctx := appengine.NewContext(r)
     key := datastore.NewKey(ctx, kind, name, 0, nil)
-    entity := new(PackageMeta)
+    entity := new(gopm_index.PackageMeta)
     if err := datastore.Get(ctx, key, entity); err != nil {
         if err == datastore.ErrNoSuchEntity {
             fmt.Fprintf(w, "0")
