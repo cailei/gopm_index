@@ -22,7 +22,7 @@ type PersonMeta struct {
 /*
 Convert PackageMeta to json
 */
-func (meta *PackageMeta) ToJsonString() (content []byte, err error) {
+func (meta *PackageMeta) ToJson() (content []byte, err error) {
     content, err = json.Marshal(meta)
     return
 }
