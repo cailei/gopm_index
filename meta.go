@@ -19,12 +19,7 @@ type PersonMeta struct {
     Email string `json:"email"`
 }
 
-func (meta *PackageMeta) ToJsonString() (str string, err error) {
-    var data []byte
-    data, err = json.Marshal(meta)
-    if err != nil {
-        return
-    }
-    str = string(data)
+func (meta *PackageMeta) ToJsonString() (content []byte, err error) {
+    content, err = json.Marshal(meta)
     return
 }
