@@ -2,10 +2,19 @@
 	"folders":
 	[
 		{
-			"path": "/home/cailei/proj/go/gopm-index",
-            "file_exclude_patterns":
+			"path": ".",
+            "file_include_patterns":
             [
-                "*.sublime-workspace"
+                "README.md",
+                "*.go",
+                ".gitignore",
+                "*.sublime-project",
+                "*.yaml"
+            ],
+            "folder_exclude_patterns":
+            [
+                "_bin",
+                "_obj"
             ]
 		}
 	]
