@@ -26,3 +26,7 @@ func (meta *PackageMeta) ToJson() (content []byte, err error) {
     content, err = json.Marshal(meta)
     return
 }
+
+func (meta *PackageMeta) FromJson(content []byte) error {
+    return json.Unmarshal(content, meta)
+}
