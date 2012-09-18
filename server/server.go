@@ -82,9 +82,7 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
 
     _, err = datastore.Put(ctx, key, meta)
     if err != nil {
-        fmt.Printf("%#v\n", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
-        fmt.Fprint(w, "0")
         return
     }
 
