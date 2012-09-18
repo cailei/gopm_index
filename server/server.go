@@ -46,38 +46,49 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
     json := r.FormValue("pkg")
     if json == "" {
         http.Error(w, "Form value pkg is empty!", http.StatusBadRequest)
+        fmt.Fprint(w, "0")
+        return
     }
 
     // unmarshal PackageMeta from json
     meta := new(gopm_index.PackageMeta)
     err := meta.FromJson([]byte(json))
     if err != nil {
-        http.Error(w, err, http.StatusBadRequest)
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        fmt.Fprint(w, "0")
+        return
     }
 
     // check name uniqueness in the database
     ctx := appengine.NewContext(r)
-    key := datastore.NewKey(ctx, kind, name, 0, nil)
+    key := datastore.NewKey(ctx, kind, meta.Name, 0, nil)
     entity := new(gopm_index.PackageMeta)
 
-    /*
+    err = datastore.Get(ctx, key, entity)
+    if err == nil {
+        fmt.Print("i am nil")
+        http.Error(w, fmt.Sprintf("The package name '%v' already exists in the index registry.\n", meta.Name), http.StatusInternalServerError)
+        fmt.Fprint(w, "0")
+        return
+    }
 
-       if err := datastore.Get(ctx, key, entity); err == nil {
-           http.Error(w, fmt.Sprintf("The package name '%v' already exists in the index.\n", meta.Name), http.statusdat
-           if err == datastore.ErrNoSuchEntity {
-               fmt.Fprintf(w, "0")
-           } else {
-               http.Error(w, err.Error(), http.StatusInternalServerError)
-           }
-           return
-       }
-       exists := agent_package_name_exists(meta.Name)
-       if exists {
-           log.Fatalf("The package name '%v' already exists in the index.\n", meta.Name)
-       }
-    */
+    fmt.Printf("%#v\n", err)
 
-    fmt.Printf("%#v\n", meta)
+    if err != datastore.ErrNoSuchEntity {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        fmt.Fprint(w, "0")
+        return
+    }
+
+    _, err = datastore.Put(ctx, key, meta)
+    if err != nil {
+        fmt.Printf("%#v\n", err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        fmt.Fprint(w, "0")
+        return
+    }
+
+    fmt.Printf("Published a package '%v'\n", meta.Name)
 
     fmt.Fprint(w, "1")
 }
