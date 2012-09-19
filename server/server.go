@@ -109,6 +109,9 @@ func update_full_index(ctx appengine.Context, w http.ResponseWriter) {
             http.Error(w, fmt.Sprintf("Indexing package '%v' failed.", meta.Name), http.StatusInternalServerError)
             return
         }
+
+        // append a newline
+        io.Copy(buf, bytes.NewBuffer([]byte("\n")))
     }
 
     // store full index to a special place
