@@ -3,10 +3,16 @@ package gopm_index_server
 import (
     "appengine"
     "appengine/datastore"
+    "bytes"
     "fmt"
     "gopm_index"
+    "io"
     "net/http"
 )
+
+type FullIndex struct {
+    Content []byte
+}
 
 func init() {
     http.HandleFunc("/all", handler_all)
@@ -14,7 +20,16 @@ func init() {
 }
 
 func handler_all(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprint(w, "Hello, world!")
+    ctx := appengine.NewContext(r)
+    key := datastore.NewKey(ctx, "FullIndex", "full_index", 0, nil)
+    index := new(FullIndex)
+    err := datastore.Get(ctx, key, index)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    reader := bytes.NewReader(index.Content)
+    io.Copy(w, reader)
 }
 
 func handler_publish(w http.ResponseWriter, r *http.Request) {
@@ -39,12 +54,9 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
 
     err = datastore.Get(ctx, key, entity)
     if err == nil {
-        fmt.Print("i am nil")
         http.Error(w, fmt.Sprintf("The package name '%v' already exists in the index registry.\n", meta.Name), http.StatusInternalServerError)
         return
     }
-
-    fmt.Printf("%#v\n", err)
 
     if err != datastore.ErrNoSuchEntity {
         http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,5 +69,54 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    update_full_index(ctx, w)
+
     fmt.Printf("Published a package '%v'\n", meta.Name)
+}
+
+func update_full_index(ctx appengine.Context, w http.ResponseWriter) {
+    // collect all packages into a single string (full index)
+    query := datastore.NewQuery("PackageMeta").Order("Name")
+    buf := bytes.NewBuffer(nil)
+    for it := query.Run(ctx); ; {
+        var meta gopm_index.PackageMeta
+        _, err := it.Next(&meta)
+
+        if err == datastore.Done {
+            break
+        }
+
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        // serialize PackageMeta to json
+        json, err := meta.ToJson()
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        // append to the buffer
+        reader := bytes.NewReader(json)
+        written, err := io.Copy(buf, reader)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        if written != int64(len(json)) {
+            http.Error(w, fmt.Sprintf("Indexing package '%v' failed.", meta.Name), http.StatusInternalServerError)
+            return
+        }
+    }
+
+    // store full index to a special place
+    index := &FullIndex{buf.Bytes()}
+    key := datastore.NewKey(ctx, "FullIndex", "full_index", 0, nil)
+    _, err := datastore.Put(ctx, key, index)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
