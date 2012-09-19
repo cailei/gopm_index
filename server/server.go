@@ -30,34 +30,38 @@ import (
     "appengine/datastore"
     "bytes"
     "fmt"
-    "gopm_index"
+    "gopm/index"
     "io"
     "net/http"
 )
 
 type FullIndex struct {
-    Content []byte
+    content []byte
 }
 
 func init() {
-    http.HandleFunc("/all", handler_all)
-    http.HandleFunc("/publish", handler_publish)
+    http.HandleFunc("/all", handlerGetFullIndex)
+    http.HandleFunc("/publish", handlerPublishNewPackage)
 }
 
-func handler_all(w http.ResponseWriter, r *http.Request) {
+func handlerGetFullIndex(w http.ResponseWriter, r *http.Request) {
     ctx := appengine.NewContext(r)
-    key := datastore.NewKey(ctx, "FullIndex", "full_index", 0, nil)
-    index := new(FullIndex)
-    err := datastore.Get(ctx, key, index)
+    key := getKeyOfFullIndexEntry(ctx)
+    entity := new(FullIndex)
+    err := datastore.Get(ctx, key, entity)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
-    reader := bytes.NewReader(index.Content)
+    reader := bytes.NewReader(entity.content)
     io.Copy(w, reader)
 }
 
-func handler_publish(w http.ResponseWriter, r *http.Request) {
+func getKeyOfFullIndexEntry(ctx appengine.Context) *datastore.Key {
+    return datastore.NewKey(ctx, "FullIndex", "full_index", 0, nil)
+}
+
+func handlerPublishNewPackage(w http.ResponseWriter, r *http.Request) {
     json := r.FormValue("pkg")
     if json == "" {
         http.Error(w, "Form value pkg is empty!", http.StatusBadRequest)
@@ -65,7 +69,7 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
     }
 
     // unmarshal PackageMeta from json
-    meta := new(gopm_index.PackageMeta)
+    meta := new(index.PackageMeta)
     err := meta.FromJson([]byte(json))
     if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -75,7 +79,7 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
     // check name uniqueness in the database
     ctx := appengine.NewContext(r)
     key := datastore.NewKey(ctx, "PackageMeta", meta.Name, 0, nil)
-    entity := new(gopm_index.PackageMeta)
+    entity := new(index.PackageMeta)
 
     err = datastore.Get(ctx, key, entity)
     if err == nil {
@@ -104,7 +108,7 @@ func update_full_index(ctx appengine.Context, w http.ResponseWriter) {
     query := datastore.NewQuery("PackageMeta").Order("Name")
     buf := bytes.NewBuffer(nil)
     for it := query.Run(ctx); ; {
-        var meta gopm_index.PackageMeta
+        var meta index.PackageMeta
         _, err := it.Next(&meta)
 
         if err == datastore.Done {
