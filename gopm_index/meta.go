@@ -5,13 +5,13 @@ import (
 )
 
 type PackageMeta struct {
-    Name         string        `json:"name"`
-    Description  string        `json:"description"`
-    Category     string        `json:"category"`
-    Keywords     []string      `json:"keywords"`
-    Author       *PersonMeta   `json:"author"`
-    Contributors []*PersonMeta `json:"contributors"`
-    Repositories []string      `json:"repositories"`
+    Name         string       `json:"name"`
+    Description  string       `json:"description"`
+    Category     string       `json:"category"`
+    Keywords     []string     `json:"keywords"`
+    Author       PersonMeta   `json:"author"`
+    Contributors []PersonMeta `json:"contributors"`
+    Repositories []string     `json:"repositories"`
 }
 
 type PersonMeta struct {
