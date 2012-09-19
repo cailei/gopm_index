@@ -12,12 +12,11 @@ type PackageMeta struct {
     Author       PersonMeta   `json:"author"`
     Contributors []PersonMeta `json:"contributors"`
     Repositories []string     `json:"repositories"`
+    Bugs         string       `json:"bugs"`
 }
 
-type PersonMeta struct {
-    Name  string `json:"name"`
-    Email string `json:"email"`
-}
+// [0] for name, [1] for email
+type PersonMeta [2]string
 
 /*
 Convert PackageMeta to json

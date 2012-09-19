@@ -8,8 +8,6 @@ import (
     "net/http"
 )
 
-var kind string = "PackageMeta"
-
 func init() {
     http.HandleFunc("/all", handler_all)
     http.HandleFunc("/name_exists", handler_name_exists)
@@ -27,7 +25,7 @@ func handler_name_exists(w http.ResponseWriter, r *http.Request) {
         return
     }
     ctx := appengine.NewContext(r)
-    key := datastore.NewKey(ctx, kind, name, 0, nil)
+    key := datastore.NewKey(ctx, "PackageMeta", name, 0, nil)
     entity := new(gopm_index.PackageMeta)
     if err := datastore.Get(ctx, key, entity); err != nil {
         if err == datastore.ErrNoSuchEntity {
@@ -61,7 +59,7 @@ func handler_publish(w http.ResponseWriter, r *http.Request) {
 
     // check name uniqueness in the database
     ctx := appengine.NewContext(r)
-    key := datastore.NewKey(ctx, kind, meta.Name, 0, nil)
+    key := datastore.NewKey(ctx, "PackageMeta", meta.Name, 0, nil)
     entity := new(gopm_index.PackageMeta)
 
     err = datastore.Get(ctx, key, entity)
