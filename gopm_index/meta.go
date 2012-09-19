@@ -10,7 +10,7 @@ type PackageMeta struct {
     Category     string   `json:"category"`
     Keywords     []string `json:"keywords"`
     Author       []string `json:"author"`
-    Contributors [][]byte `json:"contributors"`
+    Contributors []string `json:"contributors"`
     Repositories []string `json:"repositories"`
     Bugs         string   `json:"bugs"`
 }
