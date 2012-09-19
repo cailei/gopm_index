@@ -5,18 +5,15 @@ import (
 )
 
 type PackageMeta struct {
-    Name         string       `json:"name"`
-    Description  string       `json:"description"`
-    Category     string       `json:"category"`
-    Keywords     []string     `json:"keywords"`
-    Author       PersonMeta   `json:"author"`
-    Contributors []PersonMeta `json:"contributors"`
-    Repositories []string     `json:"repositories"`
-    Bugs         string       `json:"bugs"`
+    Name         string     `json:"name"`
+    Description  string     `json:"description"`
+    Category     string     `json:"category"`
+    Keywords     []string   `json:"keywords"`
+    Author       []string   `json:"author"`
+    Contributors [][]string `json:"contributors"`
+    Repositories []string   `json:"repositories"`
+    Bugs         string     `json:"bugs"`
 }
-
-// [0] for name, [1] for email
-type PersonMeta [2]string
 
 /*
 Convert PackageMeta to json
