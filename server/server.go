@@ -36,7 +36,7 @@ import (
 )
 
 type FullIndex struct {
-    content []byte
+    Content []byte
 }
 
 func init() {
@@ -53,7 +53,7 @@ func handlerGetFullIndex(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
-    reader := bytes.NewReader(entity.content)
+    reader := bytes.NewReader(entity.Content)
     io.Copy(w, reader)
 }
 
